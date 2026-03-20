@@ -52,6 +52,7 @@ export default async function ProjectDetailPage({
     <PageContainer
       title={project.name}
       description={project.description ?? undefined}
+      backHref="/projects"
       actions={
         <Badge variant={project.status === "active" ? "success" : "default"}>
           {project.status}

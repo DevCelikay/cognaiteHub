@@ -41,6 +41,23 @@ export async function toggleTask(id: string, completed: boolean) {
   refresh();
 }
 
+export async function updateTask(id: string, title: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  if (!title.trim()) throw new Error("Title is required");
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ title: title.trim() })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+  refresh();
+}
+
 export async function deleteTask(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

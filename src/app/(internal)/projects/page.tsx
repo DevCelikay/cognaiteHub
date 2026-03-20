@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { FolderKanban } from "lucide-react";
+import { FolderKanban, CheckSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -23,6 +24,7 @@ export default async function ProjectsPage() {
     .select("project_id")
     .eq("user_id", user!.id);
 
+  const totalTaskCount = taskCounts?.length ?? 0;
   const countMap = new Map<string, number>();
   taskCounts?.forEach((t) => {
     if (t.project_id) {
@@ -42,6 +44,22 @@ export default async function ProjectsPage() {
       description="All projects across clients"
       actions={<CreateProjectDialog clients={clients ?? []} />}
     >
+      {/* Pinned All Tasks card */}
+      <Link
+        href="/projects/all"
+        className="group mb-4 flex items-center gap-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 shadow-card transition-all duration-150 hover:border-indigo-300 hover:shadow-hover"
+      >
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 transition-colors group-hover:bg-indigo-200">
+          <CheckSquare className="h-[18px] w-[18px] text-indigo-500" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-indigo-900">All Tasks</h3>
+          <p className="text-xs text-indigo-400">
+            {totalTaskCount} {totalTaskCount === 1 ? "task" : "tasks"} across all projects
+          </p>
+        </div>
+      </Link>
+
       {projects && projects.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(projects as ProjectWithClient[]).map((project) => (

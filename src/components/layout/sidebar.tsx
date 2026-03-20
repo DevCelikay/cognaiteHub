@@ -8,7 +8,6 @@ import {
   Handshake,
   Users,
   FolderKanban,
-  CheckSquare,
   Calendar,
   Settings,
   LogOut,
@@ -23,7 +22,6 @@ const navItems = [
   { label: "Deals", href: "/deals", icon: Handshake },
   { label: "Clients", href: "/clients", icon: Users },
   { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Tasks", href: "/tasks", icon: CheckSquare },
   { label: "Calendar", href: "/calendar", icon: Calendar },
 ] as const;
 

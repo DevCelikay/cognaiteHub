@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { format } from "date-fns";
 import { Pencil, Trash2, X, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { TaskCheck } from "@/components/ui/task-check";
 import { toggleTask, deleteTask, updateTask } from "@/app/(internal)/actions/tasks";
-import type { Task } from "@/lib/types";
+import type { TaskWithProject } from "@/lib/types";
 
-export function TaskItem({ task }: { task: Task }) {
+function TaskCard({ task }: { task: TaskWithProject }) {
   const [completed, setCompleted] = React.useState(task.completed);
   const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(
     null
@@ -57,45 +59,57 @@ export function TaskItem({ task }: { task: Task }) {
         className="group relative flex cursor-pointer items-center gap-4 rounded-lg border border-surface-200 bg-white px-4 py-3.5 shadow-sm transition-all hover:bg-surface-50/80"
       >
         <TaskCheck checked={completed} />
-        {editing ? (
-          <div
-            className="flex flex-1 items-center gap-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <input
-              ref={inputRef}
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") saveEdit();
-                if (e.key === "Escape") cancelEdit();
-              }}
-              className="flex-1 rounded border border-surface-300 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-            />
-            <button
-              onClick={saveEdit}
-              className="text-green-500 hover:text-green-600"
+        <div className="flex flex-1 flex-col gap-1">
+          {editing ? (
+            <div
+              className="flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Check className="h-4 w-4" />
-            </button>
-            <button
-              onClick={cancelEdit}
-              className="text-surface-400 hover:text-surface-600"
+              <input
+                ref={inputRef}
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveEdit();
+                  if (e.key === "Escape") cancelEdit();
+                }}
+                className="flex-1 rounded border border-surface-300 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              />
+              <button
+                onClick={saveEdit}
+                className="text-green-500 hover:text-green-600"
+              >
+                <Check className="h-4 w-4" />
+              </button>
+              <button
+                onClick={cancelEdit}
+                className="text-surface-400 hover:text-surface-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <span
+              className={`text-sm font-medium transition-colors ${
+                completed
+                  ? "text-surface-400 line-through"
+                  : "text-surface-900 group-hover:text-surface-600"
+              }`}
             >
-              <X className="h-4 w-4" />
-            </button>
+              {task.title}
+            </span>
+          )}
+          <div className="flex items-center gap-2">
+            {task.projects && (
+              <Badge variant="default" className="text-[11px]">
+                {task.projects.name}
+              </Badge>
+            )}
+            <span className="text-[11px] text-surface-400">
+              {format(new Date(task.created_at), "MMM d")}
+            </span>
           </div>
-        ) : (
-          <span
-            className={`flex-1 text-sm font-medium transition-colors ${
-              completed
-                ? "text-surface-400 line-through"
-                : "text-surface-900 group-hover:text-surface-600"
-            }`}
-          >
-            {task.title}
-          </span>
-        )}
+        </div>
       </div>
 
       {/* Right-click context menu */}
@@ -124,5 +138,23 @@ export function TaskItem({ task }: { task: Task }) {
         </div>
       )}
     </>
+  );
+}
+
+export function TaskCardList({ tasks }: { tasks: TaskWithProject[] }) {
+  if (tasks.length === 0) {
+    return (
+      <p className="py-12 text-center text-sm text-surface-400">
+        No tasks match your filters
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {tasks.map((task) => (
+        <TaskCard key={task.id} task={task} />
+      ))}
+    </div>
   );
 }

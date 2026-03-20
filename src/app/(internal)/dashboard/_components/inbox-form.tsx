@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, FolderKanban, Check } from "lucide-react";
+import { Plus, FolderKanban, Check, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,13 +11,18 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { createTask } from "@/app/(internal)/actions/tasks";
+import { aiCreateTasks } from "@/app/(internal)/actions/ai-tasks";
 import type { Project } from "@/lib/types";
 
 export function InboxForm({ projects }: { projects: Project[] }) {
   const [title, setTitle] = React.useState("");
   const [projectId, setProjectId] = React.useState<string>("");
-  const [flash, setFlash] = React.useState(false);
+  const [flash, setFlash] = React.useState<string[]>([]);
+  const [aiLoading, setAiLoading] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  const resolvedProjectId =
+    projectId && projectId !== "none" ? projectId : null;
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
@@ -25,17 +30,35 @@ export function InboxForm({ projects }: { projects: Project[] }) {
     if (!trimmed) return;
 
     setTitle("");
-    setFlash(true);
+    setFlash([trimmed]);
     textareaRef.current?.focus();
 
     const fd = new FormData();
     fd.set("title", trimmed);
-    if (projectId && projectId !== "none") {
-      fd.set("project_id", projectId);
-    }
+    if (resolvedProjectId) fd.set("project_id", resolvedProjectId);
     createTask(fd);
 
-    setTimeout(() => setFlash(false), 600);
+    setTimeout(() => setFlash([]), 600);
+  }
+
+  async function handleAi() {
+    const trimmed = title.trim();
+    if (!trimmed || aiLoading) return;
+
+    setAiLoading(true);
+    setFlash([]);
+
+    try {
+      const titles = await aiCreateTasks(trimmed, resolvedProjectId);
+      setTitle("");
+      setFlash(titles);
+      textareaRef.current?.focus();
+      setTimeout(() => setFlash([]), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -58,10 +81,22 @@ export function InboxForm({ projects }: { projects: Project[] }) {
         />
       </div>
       <div className="mt-3 flex items-center justify-between">
-        {flash ? (
-          <div className="flex items-center gap-1.5 text-sm text-green-600">
-            <Check className="h-3.5 w-3.5" />
-            Added
+        {flash.length > 0 ? (
+          <div className="flex-1 space-y-0.5">
+            {flash.map((t, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 text-sm text-green-600"
+              >
+                <Check className="h-3.5 w-3.5 shrink-0" />
+                {t}
+              </div>
+            ))}
+          </div>
+        ) : aiLoading ? (
+          <div className="flex items-center gap-1.5 text-sm text-purple-500">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Breaking down tasks...
           </div>
         ) : (
           <span className="text-xs text-stone-400">Press Enter to add</span>
@@ -81,6 +116,18 @@ export function InboxForm({ projects }: { projects: Project[] }) {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            type="button"
+            disabled={!title.trim() || aiLoading}
+            onClick={handleAi}
+            className="h-8 w-8 rounded border border-purple-300 bg-purple-600 p-0 hover:bg-purple-700 disabled:opacity-30"
+          >
+            {aiLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+          </Button>
           <Button
             type="submit"
             disabled={!title.trim()}

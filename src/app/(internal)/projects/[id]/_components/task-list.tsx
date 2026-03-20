@@ -37,12 +37,12 @@ export function TaskList({ tasks, projectId }: { tasks: Task[]; projectId: strin
           <Plus className="h-4 w-4" />
         </Button>
       </form>
-      <div className="space-y-0.5">
+      <div className="space-y-2">
         {tasks.map((task) => (
           <TaskItem key={task.id} task={task} />
         ))}
         {tasks.length === 0 && (
-          <p className="py-8 text-center text-sm text-surface-400">No tasks yet</p>
+          <p className="py-12 text-center text-sm text-surface-400">No tasks yet</p>
         )}
       </div>
     </div>

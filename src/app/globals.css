@@ -1,26 +1,79 @@
 @import "tailwindcss";
+@import "tailwindcss/theme" theme(reference);
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@plugin "tailwindcss-animate";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ── Brand palette built around #ff3131 ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-50: #fff1f1;
+  --color-brand-100: #ffe0e0;
+  --color-brand-200: #ffc7c7;
+  --color-brand-300: #ffa0a0;
+  --color-brand-400: #ff6b6b;
+  --color-brand-500: #ff3131;
+  --color-brand-600: #ed1515;
+  --color-brand-700: #c80d0d;
+  --color-brand-800: #a50f0f;
+  --color-brand-900: #881414;
+  --color-brand-950: #4b0404;
+
+  /* ── Warm neutral surfaces ── */
+  --color-surface-50: #fafaf9;
+  --color-surface-100: #f5f5f3;
+  --color-surface-200: #e8e7e4;
+  --color-surface-300: #d5d4cf;
+  --color-surface-400: #a8a69e;
+  --color-surface-500: #8a877e;
+  --color-surface-600: #6e6b63;
+  --color-surface-700: #5a5850;
+  --color-surface-800: #4a4842;
+  --color-surface-900: #3d3b36;
+  --color-surface-950: #141311;
+
+  /* ── Typography ── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Border radius ── */
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* ── Custom shadows ── */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+
+  /* ── Animations ── */
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-up: slide-up 0.2s ease-out;
+  --animate-slide-down: slide-down 0.2s ease-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Base styles ── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  background-color: var(--color-surface-50);
+  color: var(--color-surface-950);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

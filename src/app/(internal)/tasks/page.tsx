@@ -4,6 +4,7 @@ import { CheckSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
 import { TaskFilters } from "./_components/task-filters";
+import { TaskInbox } from "./_components/task-inbox";
 import { TaskTable } from "./_components/task-table";
 import type { TaskWithProject, Project } from "@/lib/types";
 
@@ -48,6 +49,7 @@ export default async function TasksPage({
 
   return (
     <PageContainer title="Tasks" description="All tasks across projects">
+      <TaskInbox projects={(projects ?? []) as Project[]} />
       <Suspense>
         <TaskFilters projects={(projects ?? []) as Project[]} />
       </Suspense>

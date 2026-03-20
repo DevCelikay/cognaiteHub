@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
 import { InboxForm } from "./_components/inbox-form";
@@ -19,14 +18,11 @@ export default async function DashboardPage() {
 
   return (
     <PageContainer title="Dashboard" description="Overview of your business at a glance">
-      <div className="max-w-lg">
-        <div className="rounded-xl border border-surface-200 bg-white p-5 shadow-card">
-          <div className="mb-4 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50">
-              <Inbox className="h-4 w-4 text-brand-500" />
-            </div>
-            <h2 className="font-semibold text-surface-900">Inbox</h2>
-          </div>
+      <div className="border border-stone-200 bg-[#f5f0e8] shadow-sm">
+        <div className="flex items-center border-b border-stone-200/80 px-5 py-3">
+          <h2 className="text-sm font-medium text-stone-500">Inbox</h2>
+        </div>
+        <div className="p-5">
           <InboxForm projects={(projects ?? []) as Project[]} />
         </div>
       </div>

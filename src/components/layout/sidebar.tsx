@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { logout } from "@/app/(internal)/actions/auth";
@@ -43,9 +44,13 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-14 items-center px-5">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-500">
-            <span className="text-sm font-bold text-white">C</span>
-          </div>
+          <Image
+            src="/CognaiteIcon.svg"
+            alt="Cognaite"
+            width={28}
+            height={28}
+            className="invert"
+          />
           <span className="text-[15px] font-semibold tracking-tight">CognaiteHub</span>
         </Link>
       </div>

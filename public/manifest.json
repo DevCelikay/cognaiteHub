@@ -1,0 +1,16 @@
+{
+  "name": "CognaiteHub",
+  "short_name": "CognaiteHub",
+  "description": "AI Operations Hub — Manage clients, projects, and tasks",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#141311",
+  "icons": [
+    {
+      "src": "/CognaiteIcon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

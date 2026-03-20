@@ -29,6 +29,7 @@ export type Task = {
   user_id: string;
   title: string;
   completed: boolean;
+  today: boolean;
   position: number;
   project_id: string | null;
   created_at: string;

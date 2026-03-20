@@ -37,6 +37,7 @@ create table public.tasks (
   user_id uuid references auth.users(id) on delete cascade not null,
   title text not null,
   completed boolean default false not null,
+  today boolean default false not null,
   position integer default 0 not null,
   project_id uuid references public.projects(id) on delete cascade,
   created_at timestamptz default now() not null,

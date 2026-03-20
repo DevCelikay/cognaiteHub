@@ -58,6 +58,21 @@ export async function updateTask(id: string, title: string) {
   refresh();
 }
 
+export async function toggleToday(id: string, today: boolean) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ today })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+  refresh();
+}
+
 export async function deleteTask(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

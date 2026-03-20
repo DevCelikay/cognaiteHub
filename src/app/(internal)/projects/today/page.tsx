@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
-import { AllTasksView } from "./_components/all-tasks-view";
-import type { TaskWithProject, Project } from "@/lib/types";
+import { TaskCardList } from "../all/_components/task-card-list";
+import type { TaskWithProject } from "@/lib/types";
 
-export default async function AllTasksPage() {
+export default async function TodayPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -13,25 +13,19 @@ export default async function AllTasksPage() {
     .from("tasks")
     .select("*, projects(id, name)")
     .eq("user_id", user!.id)
+    .eq("today", true)
     .order("completed")
     .order("created_at", { ascending: false });
 
-  const { data: projects } = await supabase
-    .from("projects")
-    .select("id, user_id, name, description, status, client_id, created_at, updated_at")
-    .eq("user_id", user!.id)
-    .order("name");
-
   return (
     <PageContainer
-      title="All Tasks"
-      description="Every task across all projects"
+      title="Today"
+      description="Tasks you're focusing on today"
       backHref="/projects"
     >
-      <AllTasksView
-        tasks={(tasks ?? []) as TaskWithProject[]}
-        projects={(projects ?? []) as Project[]}
-      />
+      <div className="mt-4">
+        <TaskCardList tasks={(tasks ?? []) as TaskWithProject[]} />
+      </div>
     </PageContainer>
   );
 }

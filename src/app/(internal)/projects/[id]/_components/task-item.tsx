@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Pencil, Trash2, X, Check } from "lucide-react";
+import { Pencil, Trash2, X, Check, CircleDot } from "lucide-react";
 import { TaskCheck } from "@/components/ui/task-check";
-import { toggleTask, deleteTask, updateTask } from "@/app/(internal)/actions/tasks";
+import { toggleTask, deleteTask, updateTask, toggleToday } from "@/app/(internal)/actions/tasks";
 import type { Task } from "@/lib/types";
 
 export function TaskItem({ task }: { task: Task }) {
   const [completed, setCompleted] = React.useState(task.completed);
+  const [isToday, setIsToday] = React.useState(task.today);
   const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(
     null
   );
@@ -93,6 +94,7 @@ export function TaskItem({ task }: { task: Task }) {
                 : "text-surface-900 group-hover:text-surface-600"
             }`}
           >
+            {isToday && <CircleDot className="mr-1.5 inline h-3 w-3 text-brand-500" />}
             {task.title}
           </span>
         )}
@@ -104,6 +106,18 @@ export function TaskItem({ task }: { task: Task }) {
           className="fixed z-50 min-w-[160px] overflow-hidden rounded-lg border border-surface-200 bg-white py-1 shadow-lg"
           style={{ left: menu.x, top: menu.y }}
         >
+          <button
+            onClick={() => {
+              setMenu(null);
+              const next = !isToday;
+              setIsToday(next);
+              toggleToday(task.id, next);
+            }}
+            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-brand-600 hover:bg-brand-50"
+          >
+            <CircleDot className="h-3.5 w-3.5" />
+            {isToday ? "Remove from Today" : "Add to Today"}
+          </button>
           <button
             onClick={startEdit}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-surface-700 hover:bg-surface-50"

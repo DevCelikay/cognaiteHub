@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, FolderKanban, Check, Sparkles, Loader2 } from "lucide-react";
+import { Plus, FolderKanban, Check, Sparkles, Loader2, Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { createTask } from "@/app/(internal)/actions/tasks";
 import { aiCreateTasks } from "@/app/(internal)/actions/ai-tasks";
+import { transcribeAudio } from "@/app/(internal)/actions/transcribe";
 import type { Project } from "@/lib/types";
 
 export function InboxForm({ projects }: { projects: Project[] }) {
@@ -19,6 +20,10 @@ export function InboxForm({ projects }: { projects: Project[] }) {
   const [projectId, setProjectId] = React.useState<string>("");
   const [flash, setFlash] = React.useState<string[]>([]);
   const [aiLoading, setAiLoading] = React.useState(false);
+  const [recording, setRecording] = React.useState(false);
+  const [transcribing, setTranscribing] = React.useState(false);
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const chunksRef = React.useRef<Blob[]>([]);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const resolvedProjectId =
@@ -61,6 +66,46 @@ export function InboxForm({ projects }: { projects: Project[] }) {
     }
   }
 
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setTranscribing(true);
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, "recording.webm");
+          const text = await transcribeAudio(fd);
+          setTitle((prev) => (prev ? prev + " " + text : text));
+          textareaRef.current?.focus();
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setTranscribing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -93,6 +138,16 @@ export function InboxForm({ projects }: { projects: Project[] }) {
               </div>
             ))}
           </div>
+        ) : recording ? (
+          <div className="flex items-center gap-1.5 text-sm text-brand-500">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-brand-500" />
+            Recording...
+          </div>
+        ) : transcribing ? (
+          <div className="flex items-center gap-1.5 text-sm text-surface-500">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Transcribing...
+          </div>
         ) : aiLoading ? (
           <div className="flex items-center gap-1.5 text-sm text-purple-500">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -116,6 +171,24 @@ export function InboxForm({ projects }: { projects: Project[] }) {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            type="button"
+            disabled={transcribing}
+            onClick={recording ? stopRecording : startRecording}
+            className={`h-8 w-8 rounded border p-0 disabled:opacity-30 ${
+              recording
+                ? "border-brand-300 bg-brand-500 hover:bg-brand-600"
+                : "border-stone-300 bg-stone-700 hover:bg-stone-800"
+            }`}
+          >
+            {transcribing ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : recording ? (
+              <Square className="h-3 w-3" />
+            ) : (
+              <Mic className="h-3.5 w-3.5" />
+            )}
+          </Button>
           <Button
             type="button"
             disabled={!title.trim() || aiLoading}

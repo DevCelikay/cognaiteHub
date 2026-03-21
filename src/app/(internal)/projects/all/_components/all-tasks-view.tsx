@@ -36,7 +36,7 @@ export function AllTasksView({
         </Button>
       </div>
       <div className="mt-4">
-        <TaskCardList tasks={tasks} selecting={selecting} />
+        <TaskCardList tasks={tasks} selecting={selecting} projects={projects} />
       </div>
     </>
   );

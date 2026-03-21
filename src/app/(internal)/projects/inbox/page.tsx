@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
-import { TaskCardList } from "../all/_components/task-card-list";
+import { InboxTaskList } from "./_components/inbox-task-list";
 import type { TaskWithProject, Project } from "@/lib/types";
 
-export default async function TodayPage() {
+export default async function InboxPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -13,7 +13,7 @@ export default async function TodayPage() {
     .from("tasks")
     .select("*, projects(id, name)")
     .eq("user_id", user!.id)
-    .eq("today", true)
+    .is("project_id", null)
     .order("completed")
     .order("created_at", { ascending: false });
 
@@ -26,13 +26,14 @@ export default async function TodayPage() {
 
   return (
     <PageContainer
-      title="Today"
-      description="Tasks you're focusing on today"
+      title="Inbox"
+      description="Unassigned tasks — move them into projects"
       backHref="/projects"
     >
-      <div className="mt-4">
-        <TaskCardList tasks={(tasks ?? []) as TaskWithProject[]} projects={(projects ?? []) as Project[]} />
-      </div>
+      <InboxTaskList
+        tasks={(tasks ?? []) as TaskWithProject[]}
+        projects={(projects ?? []) as Project[]}
+      />
     </PageContainer>
   );
 }

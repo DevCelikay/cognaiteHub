@@ -2,48 +2,50 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Pencil, Trash2, X, Check, CircleDot, FolderKanban } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import {
+  Pencil,
+  Trash2,
+  X,
+  Check,
+  CircleDot,
+  FolderKanban,
+} from "lucide-react";
 import { TaskCheck } from "@/components/ui/task-check";
-import { toggleTask, deleteTask, updateTask, toggleToday, moveTaskToProject } from "@/app/(internal)/actions/tasks";
+import {
+  toggleTask,
+  deleteTask,
+  updateTask,
+  toggleToday,
+  moveTaskToProject,
+} from "@/app/(internal)/actions/tasks";
 import type { TaskWithProject, Project } from "@/lib/types";
 
-function TaskCard({
+function InboxTaskCard({
   task,
-  selecting,
   projects,
 }: {
   task: TaskWithProject;
-  selecting: boolean;
   projects: Project[];
 }) {
   const [completed, setCompleted] = React.useState(task.completed);
   const [isToday, setIsToday] = React.useState(task.today);
-  const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(
-    null
-  );
+  const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(null);
   const [editing, setEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
-  const [showMoveMenu, setShowMoveMenu] = React.useState(false);
+  const [showProjects, setShowProjects] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   function handleRowClick() {
     if (editing) return;
-    if (selecting) {
-      const next = !isToday;
-      setIsToday(next);
-      toggleToday(task.id, next);
-      return;
-    }
     const next = !completed;
     setCompleted(next);
     toggleTask(task.id, next);
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    if (selecting) return;
     e.preventDefault();
     setMenu({ x: e.clientX, y: e.clientY });
+    setShowProjects(false);
   }
 
   function startEdit() {
@@ -73,27 +75,9 @@ function TaskCard({
       <div
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
-        className={`group relative flex cursor-pointer items-center gap-4 rounded-lg border px-4 py-3.5 shadow-sm transition-all ${
-          selecting
-            ? isToday
-              ? "border-brand-200 bg-brand-50/60 hover:bg-brand-50"
-              : "border-surface-200 bg-white hover:bg-surface-50/80"
-            : "border-surface-200 bg-white hover:bg-surface-50/80"
-        }`}
+        className="group relative flex cursor-pointer items-center gap-4 rounded-lg border border-surface-200 bg-white px-4 py-3.5 shadow-sm transition-all hover:bg-surface-50/80"
       >
-        {selecting ? (
-          <div
-            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-              isToday
-                ? "border-brand-500 bg-brand-500"
-                : "border-surface-300 bg-white"
-            }`}
-          >
-            {isToday && <Check className="h-3 w-3 text-white" />}
-          </div>
-        ) : (
-          <TaskCheck checked={completed} />
-        )}
+        <TaskCheck checked={completed} />
         <div className="flex flex-1 flex-col gap-1">
           {editing ? (
             <div
@@ -135,13 +119,8 @@ function TaskCard({
             </span>
           )}
           <div className="flex items-center gap-2">
-            {isToday && !selecting && (
+            {isToday && (
               <CircleDot className="h-3 w-3 text-brand-500" />
-            )}
-            {task.projects && (
-              <Badge variant="default" className="text-[11px]">
-                {task.projects.name}
-              </Badge>
             )}
             <span className="text-[11px] text-surface-400">
               {format(new Date(task.created_at), "MMM d")}
@@ -150,49 +129,40 @@ function TaskCard({
         </div>
       </div>
 
-      {/* Right-click context menu */}
       {menu && (
         <div
-          className="fixed z-50 min-w-[160px] overflow-hidden rounded-lg border border-surface-200 bg-white py-1 shadow-lg"
+          className="fixed z-50 min-w-[180px] overflow-hidden rounded-lg border border-surface-200 bg-white py-1 shadow-lg"
           style={{ left: menu.x, top: menu.y }}
         >
           <div className="relative">
             <button
-              onClick={() => setShowMoveMenu(!showMoveMenu)}
+              onClick={() => setShowProjects(!showProjects)}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-surface-700 hover:bg-surface-50"
             >
               <FolderKanban className="h-3.5 w-3.5" />
               Move to project
             </button>
-            {showMoveMenu && (
+            {showProjects && (
               <div className="border-t border-surface-100">
-                <button
-                  onClick={() => {
-                    setMenu(null);
-                    setShowMoveMenu(false);
-                    moveTaskToProject(task.id, null);
-                  }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 pl-8 text-sm text-surface-500 hover:bg-surface-50"
-                >
-                  Inbox (no project)
-                </button>
-                {projects.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      setMenu(null);
-                      setShowMoveMenu(false);
-                      moveTaskToProject(task.id, p.id);
-                    }}
-                    className={`flex w-full items-center gap-2.5 px-3 py-2 pl-8 text-sm hover:bg-brand-50 hover:text-brand-700 ${
-                      task.project_id === p.id
-                        ? "text-brand-600 font-medium"
-                        : "text-surface-700"
-                    }`}
-                  >
-                    {p.name}
-                  </button>
-                ))}
+                {projects.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-surface-400">
+                    No projects available
+                  </p>
+                ) : (
+                  projects.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setMenu(null);
+                        setShowProjects(false);
+                        moveTaskToProject(task.id, p.id);
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3 py-2 pl-8 text-sm text-surface-700 hover:bg-brand-50 hover:text-brand-700"
+                    >
+                      {p.name}
+                    </button>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -231,19 +201,17 @@ function TaskCard({
   );
 }
 
-export function TaskCardList({
+export function InboxTaskList({
   tasks,
-  selecting = false,
-  projects = [],
+  projects,
 }: {
   tasks: TaskWithProject[];
-  selecting?: boolean;
-  projects?: Project[];
+  projects: Project[];
 }) {
   if (tasks.length === 0) {
     return (
       <p className="py-12 text-center text-sm text-surface-400">
-        No tasks match your filters
+        No unassigned tasks — everything is in a project
       </p>
     );
   }
@@ -251,7 +219,7 @@ export function TaskCardList({
   return (
     <div className="space-y-2">
       {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} selecting={selecting} projects={projects} />
+        <InboxTaskCard key={task.id} task={task} projects={projects} />
       ))}
     </div>
   );

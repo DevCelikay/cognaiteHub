@@ -73,6 +73,21 @@ export async function toggleToday(id: string, today: boolean) {
   refresh();
 }
 
+export async function moveTaskToProject(id: string, projectId: string | null) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ project_id: projectId })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+  refresh();
+}
+
 export async function deleteTask(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

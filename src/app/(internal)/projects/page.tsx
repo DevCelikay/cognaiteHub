@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { FolderKanban, CheckSquare, CircleDot } from "lucide-react";
+import { FolderKanban, CheckSquare, CircleDot, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -26,9 +26,12 @@ export default async function ProjectsPage() {
 
   const totalTaskCount = taskCounts?.length ?? 0;
   const countMap = new Map<string, number>();
+  let inboxCount = 0;
   taskCounts?.forEach((t) => {
     if (t.project_id) {
       countMap.set(t.project_id, (countMap.get(t.project_id) ?? 0) + 1);
+    } else {
+      inboxCount++;
     }
   });
 
@@ -53,7 +56,7 @@ export default async function ProjectsPage() {
       actions={<CreateProjectDialog clients={clients ?? []} />}
     >
       {/* Pinned task cards */}
-      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+      <div className="mb-4 grid gap-4 sm:grid-cols-3">
         <Link
           href="/projects/today"
           className="group flex items-center gap-4 rounded-xl border border-brand-200 bg-brand-50/50 p-5 shadow-card transition-all duration-150 hover:border-brand-300 hover:shadow-hover"
@@ -65,6 +68,20 @@ export default async function ProjectsPage() {
             <h3 className="font-semibold text-brand-900">Today</h3>
             <p className="text-xs text-brand-400">
               {todayCount} {todayCount === 1 ? "task" : "tasks"} for today
+            </p>
+          </div>
+        </Link>
+        <Link
+          href="/projects/inbox"
+          className="group flex items-center gap-4 rounded-xl border border-amber-200 bg-amber-50/50 p-5 shadow-card transition-all duration-150 hover:border-amber-300 hover:shadow-hover"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 transition-colors group-hover:bg-amber-200">
+            <Inbox className="h-[18px] w-[18px] text-amber-500" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-amber-900">Inbox</h3>
+            <p className="text-xs text-amber-400">
+              {inboxCount} unassigned {inboxCount === 1 ? "task" : "tasks"}
             </p>
           </div>
         </Link>
